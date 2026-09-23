@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><title>Collage AI — isolated browser checks</title>
+<style>body{font:14px monospace;margin:24px;background:#f3f1e8}pre{white-space:pre-wrap}iframe{width:100%;height:700px;border:1px solid #aaa}</style>
+<h1>Isolated AI checks · no external requests</h1>
+<p>Only this test frame uses fake fetch and in-memory storage. Your real poster and localStorage are never accessed.</p>
+<pre id="results">Starting…</pre><iframe id="fixture" title="Isolated editor test"></iframe>
+<script type="module">
+const [html,app,checks]=await Promise.all(['/index.html','/app.js','/tests/ai-browser-checks.js'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error(url);return r.text()}));
+window.testArchive=null;window.testPhase=1;window.testExpected=null;
+window.report=message=>document.querySelector('#results').textContent+='\n'+message;
+const bootstrap=`<script>
+Object.defineProperty(window,'localStorage',{value:{getItem(){return parent.testArchive},setItem(key,value){if(window.failStorage)throw new DOMException('Mock quota exceeded','QuotaExceededError');parent.testArchive=value}}});
+window.fetch=async()=>{throw Error('External requests disabled in test fixture')};
+<\/script>`;
+const source=app.replace(/init\(\);\s*$/,'')+'\n'+checks;
+const moduleUrl=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));
+window.remount=()=>{document.querySelector('#fixture').srcdoc=html.replace('<head>','<head><base href="/">'+bootstrap).replace('src="app.js"',`src="${moduleUrl}"`)};
+window.remount();
+</script>
