@@ -1,0 +1,224 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #000;
+  color: #fff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+#space {
+  position: fixed;
+  inset: 0 0 calc(116px + env(safe-area-inset-bottom)) 0;
+  overflow: hidden;
+}
+
+#liquid,
+#thoughts {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#liquid {
+  pointer-events: none;
+}
+
+#thoughts {
+  pointer-events: none;
+}
+
+.thought {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--diameter);
+  height: var(--diameter);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #000;
+  font: inherit;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.thought:focus {
+  outline: none;
+}
+
+.thought.is-selected,
+.thought.is-combine-target,
+.thought.is-dragging {
+  z-index: 1;
+}
+
+.thought.is-selected::before,
+.thought.is-combine-target::before,
+.thought.is-pending::before {
+  content: "";
+  position: absolute;
+  inset: calc(-6px - var(--pulse-growth, 0px));
+  border: 1px solid #fff;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 4px #000;
+  pointer-events: none;
+}
+
+.thought.is-pending::before {
+  border-style: dashed;
+}
+
+#pending-actions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  gap: 6px;
+  width: max-content;
+}
+
+#pending-actions[hidden] {
+  display: none;
+}
+
+#pending-actions .action-button {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.thought.is-dragging {
+  cursor: grabbing;
+}
+
+.thought-text {
+  visibility: hidden;
+  pointer-events: none;
+  width: 64%;
+  max-height: 64%;
+  overflow: auto;
+  scrollbar-width: none;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  overscroll-behavior: contain;
+}
+
+.thought.is-selected .thought-text {
+  visibility: visible;
+  pointer-events: auto;
+  touch-action: pan-y;
+}
+
+.thought.is-merging,
+.thought.is-recovering {
+  z-index: 2;
+}
+
+.thought.is-merging {
+  cursor: default;
+}
+
+.thought.is-merging::before,
+.thought.is-merging .thought-text,
+.thought.is-recovering::before,
+.thought.is-recovering .thought-text {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.thought-text::-webkit-scrollbar {
+  display: none;
+}
+
+.composer {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  right: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  left: 24px;
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+#thought-input {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  border-bottom: 1px solid #fff;
+  border-radius: 0;
+  padding: 12px 0;
+  outline: none;
+  background: #000;
+  color: #fff;
+  caret-color: #fff;
+  font: inherit;
+  font-size: 16px;
+  appearance: none;
+}
+
+#thought-input::placeholder {
+  color: #fff;
+  opacity: 1;
+}
+
+#thought-input:focus-visible {
+  border-bottom-width: 2px;
+}
+
+.action-button {
+  flex: none;
+  border: 1px solid #fff;
+  border-radius: 6px;
+  padding: 11px 12px;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.action-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.action-button:focus-visible {
+  outline: 1px solid #fff;
+  outline-offset: 3px;
+}
+
+#selection-message {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  left: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+  pointer-events: none;
+}
