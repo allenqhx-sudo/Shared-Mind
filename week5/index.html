@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thought Space</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" type="module"></script>
+  </head>
+  <body>
+    <section id="auth-panel" aria-labelledby="auth-title">
+      <form id="auth-form">
+        <h1 id="auth-title">Sign in</h1>
+        <label for="auth-email">Email</label>
+        <input id="auth-email" type="email" autocomplete="email" required maxlength="254" disabled />
+        <label for="auth-password">Password</label>
+        <input id="auth-password" type="password" autocomplete="current-password" required minlength="6" disabled />
+        <button id="email-sign-in" class="action-button" type="submit" disabled>Sign In</button>
+        <button id="google-sign-in" class="action-button" type="button" disabled>Continue with Google</button>
+        <button id="auth-toggle" class="text-button" type="button" disabled>Create account</button>
+        <p id="auth-message" class="small-message" role="status" aria-live="polite">Checking sign-in...</p>
+      </form>
+    </section>
+    <div id="account-controls" hidden>
+      <button id="profile-button" type="button" aria-label="Edit profile" aria-haspopup="dialog">
+        <span class="avatar"><img id="account-avatar" alt="" hidden referrerpolicy="no-referrer" /></span>
+        <span id="account-name">User</span>
+      </button>
+      <button id="sign-out-button" class="text-button" type="button">Sign Out</button>
+    </div>
+    <dialog id="profile-dialog" aria-labelledby="profile-title">
+      <form id="profile-form">
+        <h2 id="profile-title">Profile</h2>
+        <span class="avatar profile-preview"><img id="profile-preview" alt="Avatar preview" hidden referrerpolicy="no-referrer" /></span>
+        <label for="profile-name">Display name</label>
+        <input id="profile-name" type="text" autocomplete="nickname" required maxlength="50" />
+        <label for="profile-image">Profile image</label>
+        <input id="profile-image" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="image-help" />
+        <p id="image-help" class="small-message">JPG, PNG or WebP · up to 5 MB</p>
+        <div class="profile-buttons">
+          <button id="profile-save" class="action-button" type="submit">Save</button>
+          <button id="profile-cancel" class="text-button" type="button">Cancel</button>
+        </div>
+        <p id="profile-message" class="small-message" role="status" aria-live="polite"></p>
+      </form>
+    </dialog>
+    <main id="space" aria-label="Thoughts / 想法" hidden>
+      <svg id="liquid" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="goo" x="0" y="0" width="100%" height="100%" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
+            <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -11" />
+          </filter>
+        </defs>
+        <g id="shapes" fill="white" filter="url(#goo)"></g>
+      </svg>
+      <!-- Text stays outside the filtered SVG so it never gets blurred. -->
+      <div id="thoughts" role="group" aria-label="Thought bubbles / 想法气泡"></div>
+      <div id="pending-actions" role="group" aria-label="Pending thought" hidden>
+        <button id="add-pending-button" class="action-button" type="button">Add to Space</button>
+        <button id="delete-pending-button" class="action-button" type="button">Delete</button>
+      </div>
+    </main>
+    <div class="composer" hidden>
+      <input id="thought-input" type="text" aria-label="Type a thought / 写下一个想法" placeholder="Type a thought / 写下一个想法" autocomplete="off" spellcheck="false" enterkeyhint="done" />
+      <button id="generate-button" class="action-button" type="button" disabled>Generate</button>
+      <button id="delete-button" class="action-button" type="button" disabled>Delete</button>
+      <p id="selection-message" role="status" aria-live="polite"></p>
+    </div>
+  </body>
+</html>
