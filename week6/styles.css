@@ -1,0 +1,631 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #000;
+  color: #fff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+#landscape {
+  position: fixed;
+  inset: 0;
+  background: url("assets/background.png") center / cover no-repeat;
+  pointer-events: none;
+}
+
+#space {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+}
+
+#liquid,
+#eyes,
+#thoughts {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#liquid,
+#eyes {
+  pointer-events: none;
+}
+
+#eyes { z-index: 1; }
+
+.goo-eyes { transition: opacity 140ms ease; }
+.goo-eyes.is-revealed { opacity: 0; visibility: hidden; }
+
+#thoughts {
+  z-index: 2;
+  pointer-events: none;
+}
+
+.thought {
+  --thought-avatar-size: clamp(18px, calc(var(--diameter) * 0.18), 26px);
+  --thought-name-size: clamp(10px, calc(var(--diameter) * 0.08), 12px);
+  --thought-name-height: calc(var(--thought-name-size) * 1.2);
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--diameter);
+  height: var(--diameter);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.thought:focus {
+  outline: none;
+}
+
+.thought.is-selected,
+.thought.is-combine-target,
+.thought.is-dragging {
+  z-index: 1;
+}
+
+.thought.is-selected::before,
+.thought.is-combine-target::before,
+.thought.is-pending::before {
+  content: "";
+  position: absolute;
+  inset: calc(-6px - var(--pulse-growth, 0px));
+  border: 1px solid #000;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.thought.is-pending::before {
+  border-style: dashed;
+}
+
+#pending-actions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  gap: 6px;
+  width: max-content;
+}
+
+#pending-actions[hidden] {
+  display: none;
+}
+
+#pending-actions .action-button {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.thought.is-dragging {
+  cursor: grabbing;
+}
+
+.thought-text {
+  position: absolute;
+  top: calc(13% + var(--thought-avatar-size) + var(--thought-name-height) + 3px);
+  bottom: 13%;
+  left: 15%;
+  visibility: hidden;
+  pointer-events: none;
+  width: 70%;
+  overflow: auto;
+  scrollbar-width: none;
+  font-size: 14px;
+  line-height: 1.2;
+  text-align: center;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  overscroll-behavior: contain;
+}
+
+.thought.is-selected .thought-text {
+  visibility: visible;
+  pointer-events: auto;
+  touch-action: pan-y;
+}
+
+.thought.is-merging,
+.thought.is-recovering {
+  z-index: 2;
+}
+
+.thought.is-merging {
+  cursor: default;
+}
+
+.thought.is-merging::before,
+.thought.is-merging .thought-text,
+.thought.is-merging .bubble-identity,
+.thought.is-recovering::before,
+.thought.is-recovering .thought-text,
+.thought.is-recovering .bubble-identity {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.thought-text::-webkit-scrollbar {
+  display: none;
+}
+
+.composer {
+  position: fixed;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  right: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  left: 24px;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.input-control {
+  --plant-width: 100px;
+  --plant-edge: 36px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding-inline: 36px;
+  min-height: 64px;
+}
+
+/* Small original silhouettes grow behind the input. Only two tiny stems
+   cross its outer edge; all artwork stays outside the interactive content. */
+.input-plants {
+  position: absolute;
+  top: calc(50% - var(--plant-width) * 0.96);
+  width: var(--plant-width);
+  height: calc(var(--plant-width) * 1.44);
+  overflow: visible;
+  fill: #000;
+  color: #000;
+  pointer-events: none;
+}
+
+.input-plants--left { left: calc(var(--plant-edge) - var(--plant-width) * 0.66); }
+.input-plants--right { right: calc(var(--plant-edge) - var(--plant-width) * 0.66); }
+.plants-back { z-index: -1; }
+.plants-front { z-index: 2; }
+.plant-stem { fill: none; stroke: #000; stroke-width: 2.2; stroke-linecap: round; }
+
+.plant-reaction {
+  transform-origin: 50px 180px;
+  transition: transform 340ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.plant-sway {
+  transform-origin: var(--plant-origin);
+  animation: plant-sway var(--plant-period) ease-in-out var(--plant-delay) infinite;
+}
+
+.input-control:focus-within .input-plants--left .plant-reaction {
+  transform: translateY(-2px) rotate(0.6deg);
+}
+
+.input-control:focus-within .input-plants--right .plant-reaction {
+  transform: translateY(-2px) rotate(-0.6deg);
+}
+
+@keyframes plant-sway {
+  0%, 100% { transform: rotate(calc(-1 * var(--plant-sway))); }
+  50% { transform: rotate(var(--plant-sway)); }
+}
+
+#thought-input {
+  position: relative;
+  z-index: 1;
+  display: block;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  border: 1px solid #fff;
+  border-radius: 18px 21px 16px 20px / 20px 17px 21px 18px;
+  padding: 13px 17px;
+  outline: none;
+  background: #000;
+  color: #fff;
+  caret-color: #fff;
+  font: inherit;
+  font-size: 16px;
+  appearance: none;
+}
+
+#thought-input::placeholder {
+  color: #fff;
+  opacity: 1;
+}
+
+#thought-input:focus-visible {
+  outline: 1px solid #fff;
+  outline-offset: 3px;
+}
+
+.action-button {
+  flex: none;
+  border: 1px solid #fff;
+  border-radius: 6px;
+  padding: 11px 12px;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.action-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.action-button:focus-visible {
+  outline: 1px solid #fff;
+  outline-offset: 3px;
+}
+
+/* Only these two bottom actions change; pending and profile actions stay simple. */
+#generate-button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 94px;
+  min-height: 64px;
+  padding: 9px 12px 10px;
+  border-radius: 52% 48% 38% 57% / 62% 43% 57% 38%;
+  font-size: 13px;
+  transform-origin: 50% 70%;
+  transition: border-radius 280ms ease;
+}
+
+#generate-button:not(:disabled):hover {
+  border-radius: 51% 43% 49% 39% / 42% 50% 42% 52%;
+}
+
+#generate-button:disabled {
+  opacity: 1;
+  border-color: rgb(255 255 255 / 35%);
+}
+
+#generate-button:disabled .control-eyes,
+#generate-button:disabled .action-label { opacity: 0.45; }
+
+.control-eyes {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 13px;
+  pointer-events: none;
+}
+
+.control-eye {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.control-eye:last-child { width: 11px; height: 11px; margin-top: 2px; }
+
+.control-pupil {
+  position: absolute;
+  top: calc(50% - 2.5px);
+  left: calc(50% - 2.5px);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #000;
+  pointer-events: none;
+}
+
+.action-label { pointer-events: none; }
+
+#delete-button {
+  min-height: 42px;
+  padding: 9px 10px;
+  border-color: rgb(255 255 255 / 65%);
+  border-radius: 13px 16px 14px 12px;
+  font-size: 12px;
+}
+
+#selection-message {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 10px);
+  left: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+  pointer-events: none;
+  color: #fff;
+  background: #000;
+}
+
+.avatar {
+  display: inline-flex;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  overflow: hidden;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  background: #000;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  filter: grayscale(1);
+}
+
+.bubble-identity {
+  position: absolute;
+  top: 13%;
+  left: 16%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 68%;
+  visibility: hidden;
+  color: #fff;
+  pointer-events: none;
+}
+
+.bubble-identity .avatar {
+  width: var(--thought-avatar-size);
+  height: var(--thought-avatar-size);
+  border-color: #fff;
+  background: #000;
+}
+
+.creator-name {
+  width: 100%;
+  height: var(--thought-name-height);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  white-space: nowrap;
+  font-size: var(--thought-name-size);
+  line-height: var(--thought-name-height);
+}
+
+.thought.is-selected:not(.is-merging):not(.is-recovering) .bubble-identity {
+  visibility: visible;
+}
+
+#auth-panel {
+  position: fixed;
+  z-index: 6;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 24px;
+  color: #000;
+}
+
+#auth-form,
+#profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#auth-form {
+  width: min(100%, 300px);
+}
+
+#auth-title,
+#profile-title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+#auth-form label,
+#profile-form label {
+  font-size: 12px;
+}
+
+#auth-form input,
+#profile-form input {
+  min-width: 0;
+  width: 100%;
+  padding: 9px;
+  border: 1px solid #fff;
+  border-radius: 0;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+}
+
+.text-button,
+#profile-button {
+  padding: 6px;
+  border: 0;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.text-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.text-button:focus-visible,
+#profile-button:focus-visible {
+  outline: 1px solid #fff;
+  outline-offset: 3px;
+}
+
+.small-message {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+#account-controls {
+  position: fixed;
+  z-index: 5;
+  top: max(16px, env(safe-area-inset-top));
+  right: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  max-width: calc(100% - 32px);
+}
+
+#profile-button {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 60px;
+  padding: 10px;
+  border: 1px solid #000;
+  border-radius: 46% 53% 42% 48% / 49% 43% 54% 44%;
+  transform-origin: 50% 70%;
+  transition: transform 300ms cubic-bezier(0.22, 1.3, 0.42, 1), border-radius 300ms ease;
+}
+
+#profile-button .avatar { width: 36px; height: 36px; }
+
+#profile-button:hover,
+#profile-button:focus-visible {
+  transform: rotate(-4deg) scale(1.025, 0.98);
+  border-radius: 54% 43% 49% 40% / 44% 51% 43% 52%;
+}
+
+#sign-out-button {
+  position: relative;
+  padding: 5px 9px;
+  border-radius: 12px 10px 13px 11px;
+  font-size: 11px;
+}
+
+#profile-dialog {
+  position: fixed;
+  inset: 64px 16px auto auto;
+  width: min(320px, calc(100% - 32px));
+  max-height: calc(100% - 80px);
+  margin: 0;
+  padding: 20px;
+  border: 1px solid #fff;
+  background: #000;
+  color: #fff;
+}
+
+#profile-dialog::backdrop {
+  background: transparent;
+}
+
+.profile-preview {
+  width: 56px;
+  height: 56px;
+}
+
+.profile-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+#profile-image::file-selector-button {
+  margin-right: 8px;
+  padding: 4px;
+  border: 1px solid #fff;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+}
+
+@media (max-width: 600px) and (min-height: 500px) {
+  .composer {
+    right: 12px;
+    left: 12px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    grid-template-columns: 1fr auto 1fr;
+    gap: 5px 10px;
+  }
+  .input-control { --plant-width: 68px; --plant-edge: 30px; grid-column: 1 / -1; min-height: 56px; padding-inline: 30px; }
+  #generate-button { grid-column: 2; min-height: 56px; width: 90px; }
+  #delete-button { grid-column: 3; justify-self: start; }
+  #account-controls { right: 16px; }
+}
+
+@media (max-width: 600px) and (max-height: 499px) {
+  .composer { left: 8px; right: 8px; bottom: 8px; gap: 6px; }
+  .input-control { --plant-width: 62px; --plant-edge: 16px; padding-inline: 16px; }
+  #thought-input { padding-inline: 10px; }
+  #generate-button { width: 76px; }
+  #delete-button { padding-inline: 7px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plant-reaction,
+  #profile-button,
+  #generate-button { transition: none; }
+  .plant-sway { animation: none; }
+  .input-control:focus-within .input-plants .plant-reaction { transform: none; }
+  #profile-button:hover,
+  #profile-button:focus-visible { transform: none; }
+}
