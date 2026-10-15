@@ -1,3 +1,4 @@
+- Week 4: https://allenqhx-sudo.github.io/Shared-Mind/week4/
 # Shared Thought Space
 
 ## Project Idea
