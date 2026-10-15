@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Thought Space</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" type="module"></script>
+  </head>
+  <body>
+    <main id="space" aria-label="Thoughts / 想法">
+      <svg id="liquid" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="goo" x="0" y="0" width="100%" height="100%" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur" />
+            <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -11" />
+          </filter>
+        </defs>
+        <g id="shapes" fill="white" filter="url(#goo)"></g>
+      </svg>
+      <!-- Text stays outside the filtered SVG so it never gets blurred. -->
+      <div id="thoughts" role="group" aria-label="Thought bubbles / 想法气泡"></div>
+      <div id="pending-actions" role="group" aria-label="Pending thought" hidden>
+        <button id="add-pending-button" class="action-button" type="button">Add to Space</button>
+        <button id="delete-pending-button" class="action-button" type="button">Delete</button>
+      </div>
+    </main>
+    <div class="composer">
+      <input id="thought-input" type="text" aria-label="Type a thought / 写下一个想法" placeholder="Type a thought / 写下一个想法" autocomplete="off" spellcheck="false" enterkeyhint="done" />
+      <button id="generate-button" class="action-button" type="button" disabled>Generate</button>
+      <button id="delete-button" class="action-button" type="button" disabled>Delete</button>
+      <p id="selection-message" role="status" aria-live="polite"></p>
+    </div>
+  </body>
+</html>
